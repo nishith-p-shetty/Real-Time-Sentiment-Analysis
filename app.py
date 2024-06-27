@@ -3,6 +3,7 @@ import gradio as gr
 import whisper
 from transformers import pipeline
 
+# Set environment variables
 os.environ['TOKENIZERS_PARALLELISM'] = 'true'
 
 # Load the Whisper ASR model
@@ -123,6 +124,7 @@ custom_css = """
 }
 """
 
+# Gradio app setup
 demo = gr.Blocks(css=custom_css)
 
 with demo:
@@ -136,11 +138,7 @@ with demo:
 
     with gr.Group():
         with gr.Row():
-            audio = gr.Audio(
-                label="Input Audio",
-                show_label=False,
-                type="filepath"
-            )
+            audio = gr.Audio(label="Input Audio", type="filepath")
 
             with gr.Column():
                 btn = gr.Button("Transcribe", size="lg", variant="primary")
@@ -150,4 +148,5 @@ with demo:
 
     btn.click(inference, inputs=[audio], outputs=[lang_str, text, sentiment_output])
 
+# Launch the demo
 demo.launch(share=False)
