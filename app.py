@@ -2,6 +2,10 @@ import os
 import gradio as gr
 import whisper
 from transformers import pipeline
+import subprocess
+import re
+
+pattern = r"]\s (.*[\.,].*)\n"
 
 # Set environment variables
 os.environ['TOKENIZERS_PARALLELISM'] = 'true'
@@ -66,6 +70,18 @@ def display_sentiment_results(sentiment_results):
         sentiment_text += f"{sentiment} {emoji}: {score:.2f}\n"
     return sentiment_text
 
+def trnslate(audio_path):
+    proc = subprocess.Popen('whisper ' +  audio_path + '  --task translate', stdout=subprocess.PIPE, shell=True)
+    (out, err) = proc.communicate()
+    out = out.decode('utf-8')
+    print("OUTPUT", out)
+    match = re.search(pattern, out)
+
+    if match:
+        result = match.group(1)
+    return result
+
+
 # Main function to process the audio input
 def inference(audio_path):
     try:
@@ -77,10 +93,13 @@ def inference(audio_path):
         _, probs = model.detect_language(mel)
         lang = max(probs, key=probs.get)
 
+        text = trnslate(audio_path)
+
+
         options = whisper.DecodingOptions(fp16=False)
         result = whisper.decode(model, mel, options)
 
-        sentiment_results = analyze_sentiment(result.text)
+        sentiment_results = analyze_sentiment(text)
         sentiment_output = display_sentiment_results(sentiment_results)
 
         return lang.upper(), result.text, sentiment_output
